@@ -1,0 +1,26 @@
+#Router线程数
+count: 1
+#配置网关端口
+router_port: 9000
+#配置管理端口
+admin_port: 9100
+#tcp网关端口(暂不支持多个)
+tcp_port: 9001
+#配置数据源(mongo/yaml/mock)
+collector: yaml
+#配置MongoDB数据库连接信息(使用mongo数据源时生效)
+connection_string: mongodb://172.28.8.172:27017/loops
+#配置Yaml配置文件的路径
+yaml_path: D:\work\loops\src\main\resources\test.yaml
+#负载均衡器重试次数
+balancer_retry: 5
+#是否显示TraceLog
+trace_log: true
+#优雅关闭延时
+shutdown_time: 1000
+#配置是否开启管理接口鉴权
+admin_auth: false
+#配置webclient是否开启keep-alive
+keep_alive: true
+#jwt
+secret: 123465

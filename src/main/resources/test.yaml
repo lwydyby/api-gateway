@@ -1,0 +1,304 @@
+version: "2.0"
+
+servers:
+  - name: "sdk-proxy"
+    host: "sdk-proxy"
+  - name: "keystone-admin"
+    host: "keystone-admin"
+  - name: "keystone-public"
+    host: "keystone-public"
+  - name: "glance-api"
+    host: "glance-api"
+  - name: "cinder-api"
+    host: "cinder-api"
+  - name: "neutron-server"
+    host: "neutron-server"
+  - name: "nova-api"
+    host: "nova-api"
+  - name: "nova-placement-api"
+    host: "nova-placement-api"
+  - name: "nova-metadata-api"
+    host: "nova-metadata-api"
+  - name: "mariadb"
+    host: "mariadb"
+    protocols: "TCP"
+  - name: "steel-api"
+    host: "steel-api"
+    protocols: "TCP"
+  - name: "octavia-api"
+    host: "octavia-api"
+  - name: "ironic-api"
+    host: "ironic-api"
+
+routes:
+  #外部请求路由 由sdk-proxy转换后转发至组件
+  - name: "sdk-proxy"
+    serverId: "sdk-proxy"
+    stripPath: false
+    paths:
+      - "/api"
+  - name: "sdk-proxy-check"
+    serverId: "sdk-proxy"
+    stripPath: false
+    paths:
+      - "/check"
+  #内部请求路由 组件间HTTP请求
+  - name: "keystone-admin"
+    serverId: "keystone-admin"
+    hosts:
+      - "keystone-admin.cty.os"
+  - name: "keystone-public"
+    serverId: "keystone-public"
+    hosts:
+      - "keystone-public.cty.os"
+  - name: "glance-api"
+    serverId: "glance-api"
+    hosts:
+      - "glance-api.cty.os"
+    direct: true
+  - name: "cinder-api"
+    serverId: "cinder-api"
+    hosts:
+      - "cinder-api.cty.os"
+  - name: "neutron-server"
+    serverId: "neutron-server"
+    hosts:
+      - "neutron-server.cty.os"
+  - name: "nova-api"
+    serverId: "nova-api"
+    hosts:
+      - "nova-api.cty.os"
+  - name: "nova-placement-api"
+    serverId: "nova-placement-api"
+    hosts:
+      - "nova-placement-api.cty.os"
+  - name: "nova-metadata-api"
+    serverId: "nova-metadata-api"
+    hosts:
+      - "nova-api-metadata.cty.os"
+  - name: "mariadb"
+    serverId: "mariadb"
+    protocols:
+      - "TCP"
+    port: 9001
+    hosts:
+      - "mariadb.cty.os"
+  - name: "steel-api"
+    serverId: "steel-api"
+    protocols:
+      - "TCP"
+    port: 9002
+    hosts:
+      - "steel-api.cty.os"
+  - name: "octavia-api"
+    serverId: "octavia-api"
+    hosts:
+      - "octavia.cty.os"
+  - name: "ironic-api"
+    serverId: "ironic-api"
+    hosts:
+      - "ironic-baremetal.cty.os"
+
+upstreams:
+  - name: "sdk-proxy"
+  - name: "keystone-admin"
+  - name: "keystone-public"
+  - name: "glance-api"
+  - name: "cinder-api"
+  - name: "neutron-server"
+  - name: "nova-api"
+  - name: "nova-placement-api"
+  - name: "nova-metadata-api"
+  - name: "mariadb"
+    lvs:  true
+  - name: "steel-api"
+  - name: "octavia-api"
+  - name: "ironic-api"
+
+targets:
+  #sdk-proxy
+  - name: "sdk-proxy-1"
+    upstreamId: "sdk-proxy"
+    host: "10.114.194.115"
+    port: 8775
+  #sdk-proxy
+  - name: "sdk-proxy-2"
+    upstreamId: "sdk-proxy"
+    host: "10.114.194.116"
+    port: 8775
+
+  #keystone-admin
+  - name: "keystone-admin-1"
+    upstreamId: "keystone-admin"
+    host: "10.114.194.29"
+    port: 15896
+  #keystone-admin
+  - name: "keystone-admin-2"
+    upstreamId: "keystone-admin"
+    host: "10.114.194.30"
+    port: 15896
+  #keystone-admin
+  - name: "keystone-admin-3"
+    upstreamId: "keystone-admin"
+    host: "10.114.194.31"
+    port: 15896
+
+  #keystone-public
+  - name: "keystone-public-1"
+    upstreamId: "keystone-public"
+    host: "10.114.194.29"
+    port: 15897
+  #keystone-public
+  - name: "keystone-public-2"
+    upstreamId: "keystone-public"
+    host: "10.114.194.30"
+    port: 15897
+  #keystone-public
+  - name: "keystone-public-3"
+    upstreamId: "keystone-public"
+    host: "10.114.194.31"
+    port: 15897
+
+  #glance-api
+  # - name: "glance-api-1"
+  #   upstreamId: "glance-api"
+  #    host: "10.114.194.29"
+  #    port: 18894
+  #glance-api
+  - name: "glance-api-2"
+    upstreamId: "glance-api"
+    host: "172.28.8.23"
+    port: 80
+  #glance-api
+  # - name: "glance-api-3"
+  #   upstreamId: "glance-api"
+  #   host: "10.114.194.31"
+  #   port: 18894
+
+  #cinder-api
+  - name: "cinder-api-1"
+    upstreamId: "cinder-api"
+    host: "10.114.194.29"
+    port: 18900
+  #cinder-api
+  - name: "cinder-api-2"
+    upstreamId: "cinder-api"
+    host: "10.114.194.30"
+    port: 18900
+  #cinder-api
+  - name: "cinder-api-3"
+    upstreamId: "cinder-api"
+    host: "10.114.194.31"
+    port: 18900
+
+  #neutron-server
+  - name: "neutron-server-1"
+    upstreamId: "neutron-server"
+    host: "10.114.194.29"
+    port: 18912
+  #neutron-server
+  - name: "neutron-server-2"
+    upstreamId: "neutron-server"
+    host: "10.114.194.30"
+    port: 18912
+  #neutron-server
+  - name: "neutron-server-3"
+    upstreamId: "neutron-server"
+    host: "10.114.194.31"
+    port: 18912
+
+  #nova-api
+  - name: "nova-api-1"
+    upstreamId: "nova-api"
+    host: "10.114.194.29"
+    port: 18898
+  #nova-api
+  - name: "nova-api-2"
+    upstreamId: "nova-api"
+    host: "10.114.194.30"
+    port: 18898
+  #nova-api
+  - name: "nova-api-3"
+    upstreamId: "nova-api"
+    host: "10.114.194.31"
+    port: 18898
+
+  #nova-placement-api
+  - name: "nova-placement-api-1"
+    upstreamId: "nova-placement-api"
+    host: "10.114.194.29"
+    port: 18887
+  #nova-placement-api
+  - name: "nova-placement-api-2"
+    upstreamId: "nova-placement-api"
+    host: "10.114.194.30"
+    port: 18887
+  #nova-placement-api
+  - name: "nova-placement-api-3"
+    upstreamId: "nova-placement-api"
+    host: "10.114.194.31"
+    port: 18887
+
+  #nova-metadata-api
+  - name: "nova-metadata-api-1"
+    upstreamId: "nova-metadata-api"
+    host: "10.114.194.29"
+    port: 18899
+  #nova-metadata-api
+  - name: "nova-metadata-api-2"
+    upstreamId: "nova-metadata-api"
+    host: "10.114.194.30"
+    port: 18899
+  #nova-metadata-api
+  - name: "nova-metadata-api-3"
+    upstreamId: "nova-metadata-api"
+    host: "10.114.194.31"
+    port: 18899
+
+  #mariadb
+  - name: "mariadb-1"
+    upstreamId: "mariadb"
+    host: "127.0.0.1"
+    port: 3306
+  - name: "mariadb-2"
+    upstreamId: "mariadb"
+    host: "172.28.8.248"
+    port: 13306
+
+  #steel-api
+  - name: "steel-api-1"
+    upstreamId: "steel-api"
+    host: "10.114.194.60"
+    port: 12003
+
+  #octavia-api
+  - name: "octavia-api-1"
+    upstreamId: "octavia-api"
+    host: "10.114.194.29"
+    port: 9876
+  #octavia-api
+  - name: "octavia-api-2"
+    upstreamId: "octavia-api"
+    host: "10.114.194.30"
+    port: 9876
+  #octavia-api
+  - name: "octavia-api-3"
+    upstreamId: "octavia-api"
+    host: "10.114.194.31"
+    port: 9876
+
+  #ironic
+  - name: "ironic-api-1"
+    upstreamId: "ironic-api"
+    host: "10.114.194.57"
+    port: 6385
+  #ironic
+  - name: "ironic-api-2"
+    upstreamId: "ironic-api"
+    host: "10.114.194.58"
+    port: 6385
+  #ironic
+  - name: "ironic-api-3"
+    upstreamId: "ironic-api"
+    host: "10.114.194.59"
+    port: 6385

@@ -1,0 +1,86 @@
+image: docker
+
+services:
+  - mongo
+
+cache:
+  paths:
+    - ~/.gradle/caches
+
+stages:
+  - test
+  - build
+  - docker-master
+  - docker-tag
+  - docker-branch
+  - deploy
+  - buildx
+
+test:
+  stage: test
+  image: gradle:jdk8-alpine
+  script:
+    - export connection_string=mongodb://mongo:27017/loopsTest
+    - export collector=mongo
+    - gradle test --stacktrace -info
+  artifacts:
+    reports:
+      junit:
+        - build/test-results/test/TEST-*.xml
+
+build:
+  stage: build
+  image: gradle:jdk8-alpine
+  script:
+    - gradle assemble --stacktrace -info
+    - gradle version -q > build/libs/version.txt
+  artifacts:
+    paths:
+      - build/libs
+
+docker-master:
+  stage: docker-master
+  image: docker
+  only:
+    - master
+  script:
+    - DATE=`date +%Y%m%d`
+    - VERSION=`cat build/libs/version.txt`
+    - TAG=$VERSION.$CI_JOB_ID
+    - docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD} ${DOCKER_REGISTER}
+    - docker build -t ${DOCKER_REGISTER}/${PROJECT_NAME}:$TAG .
+    - docker push ${DOCKER_REGISTER}/${PROJECT_NAME}:$TAG
+    - docker tag ${DOCKER_REGISTER}/${PROJECT_NAME}:$TAG ${DOCKER_REGISTER}/${PROJECT_NAME}:latest
+    - docker push ${DOCKER_REGISTER}/${PROJECT_NAME}:latest
+
+docker-tag:
+  stage: docker-tag
+  image: docker
+  only:
+    - tags
+  script:
+    - DATE=`date +%Y%m%d`
+    - VERSION=`cat build/libs/version.txt`
+    - TAG=$VERSION
+    - docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD} ${DOCKER_REGISTER}
+    - docker build -t ${DOCKER_REGISTER}/${PROJECT_NAME}:$TAG .
+    - docker push ${DOCKER_REGISTER}/${PROJECT_NAME}:$TAG
+
+docker-branch:
+  stage: docker-branch
+  image: docker
+  only:
+    - branches
+  except:
+    - master
+    - tags
+  script:
+    - DATE=`date +%Y%m%d`
+    - VERSION=`cat build/libs/version.txt`
+    - TAG=$CI_COMMIT_REF_NAME-$VERSION.$CI_JOB_ID
+    - docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD} ${DOCKER_REGISTER}
+    - docker build -t ${DOCKER_REGISTER}/${PROJECT_NAME}:$TAG .
+    - docker push ${DOCKER_REGISTER}/${PROJECT_NAME}:$TAG
+    - docker tag ${DOCKER_REGISTER}/${PROJECT_NAME}:$TAG ${DOCKER_REGISTER}/${PROJECT_NAME}:$CI_COMMIT_REF_NAME-latest
+    - docker push ${DOCKER_REGISTER}/${PROJECT_NAME}:$CI_COMMIT_REF_NAME-latest
+
